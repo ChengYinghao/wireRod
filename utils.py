@@ -1,11 +1,12 @@
 import numpy as np
 from skimage.filters import sobel_h, sobel_v, gaussian
+from skimage.transform import hough_line, hough_line_peaks
 
 
-# img
+# edges & gradients
 
 def compute_edges(img, blur=5):
-    img = gaussian(img, blur)
+    img = gaussian(img, blur, multichannel=True)
     components = []
     for c in range(np.shape(img)[-1]):
         components.append(sobel_h(img[:, :, c]))
@@ -21,7 +22,59 @@ def compute_grad(edges, blur=25):
     return grad
 
 
-# lines
+# hough
+
+def find_parallel(edges, bin_threshold=0.03, degree_acc=1, hough_blur=1):
+    edges = edges > bin_threshold
+    
+    tested_angles = np.linspace(-np.pi / 2, np.pi / 2, np.ceil(180 / degree_acc))
+    hough, theta, rho = hough_line(edges, tested_angles)
+    
+    hough = gaussian(hough, hough_blur)
+    
+    hs, thetas, rhos = hough_line_peaks(hough, theta, rho)
+    peaks = zip(hs, thetas, rhos)
+    peaks = sorted(peaks, key=lambda p: p[0], reverse=True)
+    peaks = tuple(peaks)
+    
+    _, theta1, rho1 = peaks[0]
+    _, theta2, rho2 = peaks[1]
+    return (theta1, rho1), (theta2, rho2)
+
+
+def initial_points(theta1, rho1, theta2, rho2, width, height):
+    theta = (theta1 + theta2) / 2
+    rho = (rho1 + rho2) / 2
+    
+    sin_theta = np.sin(theta)
+    cos_theta = np.cos(theta)
+    
+    xc = width / 2
+    yc = height / 2
+    
+    xpc = xc * sin_theta * sin_theta + cos_theta * (rho - yc * sin_theta)
+    ypc = yc * cos_theta * cos_theta + sin_theta * (rho - xc * cos_theta)
+    
+    pc = np.array((xpc, ypc))
+    n = np.array((cos_theta, sin_theta))
+    d = (rho1 - rho2) / 2
+    p1 = pc + n * d
+    p2 = pc - n * d
+    
+    return p1, p2
+
+
+def plot_line(gca, width, height, theta, rho, color='black'):
+    if (theta + np.pi / 4) % np.pi <= np.pi / 2:
+        xs = np.array((0, width))
+        ys = (rho - xs * np.cos(theta)) / np.sin(theta)
+    else:
+        ys = np.array((0, height))
+        xs = (rho - ys * np.sin(theta)) / np.cos(theta)
+    gca.plot(xs, height - ys, color=color)
+
+
+# gradient
 
 def lines_mask(p1, p2, ps, thickness=1, expand=3):
     dp = p2 - p1
@@ -42,8 +95,6 @@ def lines_mask(p1, p2, ps, thickness=1, expand=3):
     
     return line1, line2
 
-
-# gradient
 
 def compute_pan(grad, mask):
     mask = np.expand_dims(mask, -1)
@@ -108,9 +159,14 @@ def compute_dp(p1, p2, ps, grad, pan_m, rot_m, spr_m, thickness=1, expand=3, dis
     dp1_spr, dp2_spr = compute_spring(p1, p2, dis_range[0], dis_range[1], rebound)
     dp1 += dp1_spr / spr_m
     dp2 += dp2_spr / spr_m
+    
+    return dp1, dp2
 
 
-# visualize
+def compute_score(mask, edges):
+    score = np.mean(mask * edges)
+    return score
+
 
 def plot_ruler(gca, p1, p2, line_color='black', bridge_color='blue'):
     x1, y1 = p1
