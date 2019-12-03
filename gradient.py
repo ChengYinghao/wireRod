@@ -14,7 +14,7 @@ from utils import \
 
 # %%
 
-img = plt.imread("data/lab1.jpg")
+img = plt.imread("data/3.jpg")
 img = img[::4, ::4]
 h, w = np.shape(img)[:2]
 l = np.sqrt(w * h)
@@ -30,7 +30,16 @@ edges = compute_edges(img, l / 100)
 # %%
 
 # todo 此处可以考虑用低分辨率图像以减少霍夫变换的计算量
-(theta1, rho1), (theta2, rho2) = find_parallel(edges)
+bin_threshold = 0.03
+(theta1, rho1), (theta2, rho2) = find_parallel(edges, bin_threshold)
+
+# plt.figure()
+# plt.imshow(img, extent=(0, w, 0, h))
+# plot_line(plt, w, h, theta1, rho1)
+# plot_line(plt, w, h, theta2, rho2)
+# plt.xlim(0, w)
+# plt.ylim(0, h)
+# plt.show()
 
 # %%
 
@@ -38,6 +47,13 @@ edges = compute_edges(img, l / 100)
 
 p1 = np.array((x1, h - y1))
 p2 = np.array((x2, h - y2))
+
+# plt.figure()
+# plt.imshow(img, extent=(0, w, 0, h))
+# plot_ruler(plt, p1, p2)
+# plt.xlim(0, w)
+# plt.ylim(0, h)
+# plt.show()
 
 # %% md
 
@@ -47,7 +63,7 @@ p2 = np.array((x2, h - y2))
 
 grad = compute_grad(edges, l / 100)
 
-plt.imshow(grad[:, :, 1], extent=(0, w, 0, h))
+# plt.imshow(grad[:, :, 1], extent=(0, w, 0, h))
 
 # %%
 
@@ -56,8 +72,15 @@ ps = np.stack(np.meshgrid(np.arange(w), np.flip(np.arange(h))), -1)
 # %%
 
 # 加扰动
-p1 += np.random.uniform(-1, 1, [2]) * l / 50
-p2 += np.random.uniform(-1, 1, [2]) * l / 50
+# p1 += np.random.uniform(-1, 1, [2]) * l / 50
+# p2 += np.random.uniform(-1, 1, [2]) * l / 50
+
+# plt.figure()
+# plt.imshow(img, extent=(0, w, 0, h))
+# plot_ruler(plt, p1, p2)
+# plt.xlim(0, w)
+# plt.ylim(0, h)
+# plt.show()
 
 v1 = 0
 v2 = 0
@@ -69,14 +92,22 @@ movements = []
 
 decent_rate = 1.0
 momentum = 1
-damping = 0.3
+damping = 0.5
 
 thickness = 5
-expand = 1
+expand = 3
 
 pan_m = 0.001 * l * (thickness + expand)
 rot_m = 0.002 * l * l * (thickness + expand)
 spr_m = 0.1 * l
+
+# %%
+
+fig = plt.figure(figsize=(10, 5))
+ax_img = plt.subplot2grid((2, 3), (0, 0), rowspan=2, colspan=2)
+ax_mov = plt.subplot2grid((2, 3), (0, 2))
+ax_scr = plt.subplot2grid((2, 3), (1, 2))
+plt.tight_layout()
 
 
 def step(i):
@@ -118,48 +149,33 @@ def step(i):
     scores.append(score)
     
     print(f"step={len(movements)}, movement={movement:.2f}, score={score:.2f}")
-    plt.clf()
-    plt.imshow(img, extent=(0, w, 0, h))
-    plot_ruler(plt, p1, p2)
-    plt.xlim(0, w)
-    plt.ylim(0, h)
+    plot()
+    
+    if len(movements) > 5:
+        if np.mean(np.array(movements[-5:])) <= 0.15:
+            animate.event_source.stop()
+
+
+def plot():
+    ax_img.clear()
+    ax_img.imshow(img, extent=(0, w, 0, h))
+    plot_ruler(ax_img, p1, p2)
+    ax_img.set_xlim(0, w)
+    ax_img.set_ylim(0, h)
+    
+    ax_mov.clear()
+    ax_mov.set_ylabel("movement")
+    ax_mov.plot(movements)
+    
+    ax_scr.clear()
+    ax_scr.set_ylabel("score")
+    ax_scr.plot(scores)
 
 
 # %%
 
+plot()
 plt.ion()
-fig = plt.figure()
-plt.imshow(img, extent=(0, w, 0, h))
-plot_ruler(plt, p1, p2)
-plt.xlim(0, w)
-plt.ylim(0, h)
-animate = FuncAnimation(fig, step, frames=None, fargs=None)
 plt.show()
 
-# %%
-
-# if len(movements) > 5:
-#     if movements[-1] < 0.5:
-#         last_movements = np.array(movements[-5:])
-#         mean = np.mean(last_movements)
-#         std_dev = np.sqrt(np.mean(np.square(last_movements - mean)))
-#         if std_dev / mean <= 0.01:
-#             break
-
-# plt.figure()
-# plt.plot(movements)
-# plt.ylabel("movements")
-# plt.xlabel("iterations")
-#
-# plt.figure()
-# plt.plot(scores)
-# plt.ylabel("scores")
-# plt.xlabel("iterations")
-#
-# plt.figure()
-# plt.imshow(img, extent=(0, w, 0, h))
-# plot_ruler(plt, p1, p2)
-# plt.xlim(0, w)
-# plt.ylim(0, h)
-
-# %%
+animate = FuncAnimation(fig, step, frames=None, fargs=None)

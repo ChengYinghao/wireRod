@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from skimage.filters import sobel_h, sobel_v, gaussian
 from skimage.transform import hough_line, hough_line_peaks
 
@@ -157,18 +158,18 @@ def compute_dp(p1, p2, ps, grad, pan_m, rot_m, spr_m, thickness=1, expand=3, dis
     dp1 = 0
     dp2 = 0
     
-    dp1_pan = compute_pan(grad, mask1)
-    dp2_pan = compute_pan(grad, mask2)
-    dp1 += dp1_pan / pan_m
-    dp2 += dp2_pan / pan_m
+    dp1_pan = compute_pan(grad, mask1, pan_m)
+    dp2_pan = compute_pan(grad, mask2, pan_m)
+    dp1 += dp1_pan
+    dp2 += dp2_pan
     
-    dp1_rot, dp2_rot = compute_rot(p1, p2, ps, grad, mask_all)
-    dp1 += dp1_rot / rot_m
-    dp2 += dp2_rot / rot_m
+    dp1_rot, dp2_rot = compute_rot(p1, p2, ps, grad, mask_all, rot_m)
+    dp1 += dp1_rot
+    dp2 += dp2_rot
     
-    dp1_spr, dp2_spr = compute_spring(p1, p2, dis_range[0], dis_range[1], rebound)
-    dp1 += dp1_spr / spr_m
-    dp2 += dp2_spr / spr_m
+    dp1_spr, dp2_spr = compute_spring(p1, p2, spr_m, dis_range[0], dis_range[1], rebound)
+    dp1 += dp1_spr
+    dp2 += dp2_spr
     
     return dp1, dp2
 
