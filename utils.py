@@ -96,31 +96,41 @@ def lines_mask(p1, p2, ps, thickness=1, expand=3):
     return line1, line2
 
 
-def compute_pan(grad, mask):
+def compute_pan(grad, mask, pan_m):
     mask = np.expand_dims(mask, -1)
     pan = np.sum(grad * mask, (0, 1))
+    pan = pan / pan_m
     return pan
 
 
-def compute_rot(p1, p2, ps, grad, mask):
+def compute_rot(p1, p2, ps, grad, mask, rot_m, max_rot=1):
     pc = (p1 + p2) / 2
     pd = ps - pc
     
     rot = np.cross(grad, pd)
     rot = np.sum(rot * mask, (0, 1))
     
+    rot = rot / rot_m
+    max_rot = np.pi / 180 * max_rot
+    if rot > max_rot:
+        rot = max_rot
+    elif rot < -max_rot:
+        rot = -max_rot
+    
     rm = np.array([
         [np.cos(rot), -np.sin(rot)],
         [np.sin(rot), np.cos(rot)]
     ])
     
-    dp1 = (p1 - pc) @ rm
-    dp2 = (p2 - pc) @ rm
+    dp1 = p1 - pc
+    dp2 = p2 - pc
+    dp1 = dp1 @ rm - dp1
+    dp2 = dp2 @ rm - dp2
     
     return dp1, dp2
 
 
-def compute_spring(p1, p2, lower=None, upper=None, rebound=0.0):
+def compute_spring(p1, p2, spr_m, lower=None, upper=None, rebound=0.0):
     if upper is None:
         upper = lower
     
@@ -130,13 +140,13 @@ def compute_spring(p1, p2, lower=None, upper=None, rebound=0.0):
         if dl_lower > 0:
             dp1 = (p1 - p2) * (dl_lower + rebound)
             dp2 = -dp1
-            return dp1, dp2
+            return dp1 / spr_m, dp2 / spr_m
     elif upper is not None:
         dl_upper = l - upper
         if dl_upper > 0:
             dp1 = (p2 - p1) * (dl_upper + rebound)
             dp2 = -dp1
-            return dp1, dp2
+            return dp1 / spr_m, dp2 / spr_m
     return np.zeros(2, np.float), np.zeros(2, np.float)
 
 
