@@ -15,7 +15,6 @@ from utils import \
 # %%
 
 img = plt.imread("data/3.jpg")
-img = img[::4, ::4]
 h, w = np.shape(img)[:2]
 l = np.sqrt(w * h)
 
@@ -29,9 +28,13 @@ edges = compute_edges(img, l / 100)
 
 # %%
 
-# todo 此处可以考虑用低分辨率图像以减少霍夫变换的计算量
+reduce_scale = 16
+reduced_edges = edges[::reduce_scale, ::reduce_scale]
 bin_threshold = 0.03
-(theta1, rho1), (theta2, rho2) = find_parallel(edges, bin_threshold)
+
+(theta1, rho1), (theta2, rho2) = find_parallel(reduced_edges, bin_threshold)
+rho1 *= reduce_scale
+rho2 *= reduce_scale
 
 # plt.figure()
 # plt.imshow(img, extent=(0, w, 0, h))
@@ -72,8 +75,8 @@ ps = np.stack(np.meshgrid(np.arange(w), np.flip(np.arange(h))), -1)
 # %%
 
 # 加扰动
-# p1 += np.random.uniform(-1, 1, [2]) * l / 50
-# p2 += np.random.uniform(-1, 1, [2]) * l / 50
+p1 += np.random.uniform(-1, 1, [2]) * l / 50
+p2 += np.random.uniform(-1, 1, [2]) * l / 50
 
 # plt.figure()
 # plt.imshow(img, extent=(0, w, 0, h))
