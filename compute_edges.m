@@ -1,19 +1,16 @@
 function edges = compute_edges(img, sigma)
 % 提取（多通道）图像的边缘（通道合并使用平方和）
 
-truncate = 4.0;
-gaussian_kernel_size = 2*sigma*truncate+1;
-gaussian_kernel = fspecial('gaussian', gaussian_kernel_size, sigma);
+img = compute_blur(img,sigma);
 
-sobel_h_kernel = fspecial('sobel');
+sobel_h_kernel = [1,2,1;0,0,0;-1,-2,-1]; %fspecial('sobel');
 sobel_v_kernel = sobel_h_kernel';
 
-components = [];
-for i = 1:size(img)
+components = zeros(0,0,0);
+for i = 1:size(img,3)
     chan = img(:,:,i);
-    chan_blur = imfilter(chan, gaussian_kernel, 'replicate');
-    components(end+1) = imfilter(chan_blur, sobel_h_kernel, 'replicate');
-    components(end+1) = imfilter(chan_blur, sobel_v_kernel, 'replicate');
+    components(:,:,end+1) = compute_sobel_h(chan);
+    components(:,:,end+1) = compute_sobel_v(chan);
 end
-
-edges = sqrt(sum(power(components, 2)));
+edges = sum(components.^2,3).^(1/2);
+%figure, imshow(edges);
