@@ -98,6 +98,7 @@ def lines_mask(p1, p2, ps, thickness=1, expand=3):
 
 
 def compute_pan(grad, mask, pan_m):
+    # todo use array mask to reduce computation
     mask = np.expand_dims(mask, -1)
     pan = np.sum(grad * mask, (0, 1))
     pan = pan / pan_m

@@ -64,6 +64,10 @@ p2 = np.array((x2, h - y2))
 
 # %%
 
+# todo reduce img to accelerate the gradient decent
+
+# %%
+
 grad = compute_grad(edges, l / 100)
 
 # plt.imshow(grad[:, :, 1], extent=(0, w, 0, h))
