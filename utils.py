@@ -85,12 +85,12 @@ def lines_mask(p1, p2, ps, thickness=1, expand=3):
     
     d1 = np.abs(np.sum((ps - p1) * n, -1))
     d2 = np.abs(np.sum((ps - p2) * n, -1))
-    dl = np.abs(np.sum((ps - p1) * m, -1))
+    dm = np.abs(np.sum((ps - p1) * m, -1))
     
     line1 = np.clip(thickness / 2 - d1 + expand, 0.0, expand) / expand
     line2 = np.clip(thickness / 2 - d2 + expand, 0.0, expand) / expand
     
-    cut = np.clip(l - dl + expand, 0.0, expand) / expand
+    cut = np.clip(l - dm + expand, 0.0, expand) / expand
     line1 *= cut
     line2 *= cut
     
