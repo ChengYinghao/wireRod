@@ -16,6 +16,6 @@ dp2 = dp2 + dp2_pan;
 dp1 = dp1 + dp1_rot;
 dp2 = dp2 + dp2_rot;
 
-%[dp1_spr, dp2_spr] = compute_spring(p1, p2, spr_m, dis_range(1), dis_range(2), rebound);
-%dp1 = dp1 + dp1_spr;
-%dp2 = dp2 + dp2_spr;
+[dp1_spr, dp2_spr] = compute_spring(p1, p2, spr_m, dis_range(1), dis_range(2), rebound);
+dp1 = dp1 + dp1_spr;
+dp2 = dp2 + dp2_spr;
