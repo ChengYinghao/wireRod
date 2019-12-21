@@ -5,3 +5,4 @@ function grad = compute_grad(edges, blur)
 edges = compute_blur(edges, blur);
 grad(:,:,1)=compute_sobel_h(edges);
 grad(:,:,2)=compute_sobel_v(edges);
+grad = -grad;
