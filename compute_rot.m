@@ -1,5 +1,6 @@
-function [dp1, dp2] = compute_rot(p1, p2, ps, grad, mask, rot_m, max_rot)
-% max_rot一般取1
+function [dp1, dp2] = compute_rot(p1, p2, ps, grad, mask, rot_m, rot_restrict)
+% 计算单步旋转产生的变化
+% rot_restrict是旋转角度的最大值（不能一下子转太多），单位为角度（360度的那个）
 
 pc = (p1 + p2) / 2;
 pd = ps - reshape(pc,1,1,2);
@@ -8,11 +9,11 @@ rot = grad(:,:,1).*pd(:,:,2)-grad(:,:,2).*pd(:,:,1);
 rot = sum(sum(rot .* mask));
 
 rot = rot / rot_m;
-max_rot = pi / 180 * max_rot;
-if rot > max_rot
-    rot = max_rot;
-elseif rot < -max_rot
-    rot = -max_rot;
+rot_restrict = pi / 180 * rot_restrict;
+if rot > rot_restrict
+    rot = rot_restrict;
+elseif rot < -rot_restrict
+    rot = -rot_restrict;
 end
 rm = [cos(rot),-sin(rot);sin(rot),cos(rot)];
 

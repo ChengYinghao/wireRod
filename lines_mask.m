@@ -1,9 +1,9 @@
-function [line1, line2] = lines_mask(p1, p2, ps, thickness, expand)
-% 一般设置thickness=1, expand=3
+function [line1, line2] = lines_mask(p1, p2, ps, thickness, expand, ratio)
+% 一般设置thickness=1, expand=3, ratio=1
 
 dp = p2 - p1;
-l = sqrt(sum(dp.^2));
-n = dp / l;
+L = sqrt(sum(dp.^2));
+n = dp / L;
 m = n * [0 -1;1 0];
 
 d1 = abs(sum( (ps-reshape(p1,1,1,2)) .* reshape(n,1,1,2), 3));
@@ -20,7 +20,7 @@ line2(line2 <= 0.0) = 0.0;
 line2(line2 >= expand) = expand;
 line2 = line2 / expand;
 
-cut = l - dm + expand;
+cut = L*ratio - dm + expand;
 cut(cut <= 0.0) = 0.0;
 cut(cut >= expand) = expand;
 cut = cut / expand;
