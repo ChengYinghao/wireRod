@@ -9,7 +9,7 @@ for i=2:2:length(varargin)
     name = varargin{i-1};
     value = varargin{i};
     switch name
-        case "shrink"
+        case "shrinking"
             shrinking = value;
         case "bin_threshold"
             bin_threshold = value;
