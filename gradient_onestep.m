@@ -1,6 +1,6 @@
 function [dp1, dp2] = gradient_onestep(grad, p1, p2, ps, pan_m, rot_m, spr_m, varargin)
 % 计算梯度下降的单步变化
-% 参数默认值：
+% 可选参数默认值：
 % thickness=0.0, expand=8.0, ratio=1.0, 
 % rot_restrict=1.0, spr_lower=nan, spr_upper=nan
 %（建议取 spr_lower=img_size/25, spr_upper=img_size/5）

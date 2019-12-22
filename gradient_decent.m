@@ -1,6 +1,6 @@
 function [p1,p2,v1,v2,steps,D,dD] = gradient_decent(grad, p1, p2, v1, v2, varargin)
 % 梯度下降调整锚点
-% 参数默认值：
+% 可选参数默认值：
 % max_steps=20, min_movement=0.001
 % decent_rate=1.0, momentum=1.0, damping=0.3
 % pan_rate=1000.0, rot_rate=5.0, spr_rate=2.0
