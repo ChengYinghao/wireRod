@@ -2,7 +2,7 @@ function [D,dD] = measure(img, varargin)
 % 测量图像中线材的直径
 % 返回值包括直径和直径的测量不确定度
 % 可选参数默认值：
-% edge_blur=5, grad_blue=25
+% edge_blur=5, grad_blur=25
 % max_steps=20, min_movement=0.001
 % decent_rate=1.0, momentum=1.0, damping=0.3
 % pan_rate=1000.0, rot_rate=5.0, spr_rate=2.0
